@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { Calendar, Users, TrendingUp, Plus, Edit, BarChart3, User as UserIcon } from 'lucide-react'
+import { Calendar, Users, TrendingUp, Plus, Edit, BarChart3, User as UserIcon, QrCode } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import axios from 'axios'
 import toast from 'react-hot-toast'
@@ -119,6 +119,10 @@ export default function ClubDashboard() {
               </div>
             </div>
             <div className="flex gap-2">
+              <Link href="/check-in" className="btn-primary flex items-center gap-1 text-sm">
+                <QrCode className="w-4 h-4" />
+                <span>Check-In</span>
+              </Link>
               <Link href="/profile" className="btn-secondary flex items-center gap-1 text-sm">
                 <UserIcon className="w-4 h-4" />
                 <span>Profile</span>
@@ -131,7 +135,7 @@ export default function ClubDashboard() {
                 <Edit className="w-4 h-4" />
                 <span>Edit Club</span>
               </Link>
-              <Link href="/events/create" className="btn-primary flex items-center gap-1 text-sm">
+              <Link href="/events/create" className="btn-secondary flex items-center gap-1 text-sm">
                 <Plus className="w-4 h-4" />
                 <span>Create Event</span>
               </Link>

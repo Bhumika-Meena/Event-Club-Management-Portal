@@ -8,6 +8,7 @@ import { useAuth } from '../contexts/AuthContext'
 import axios from 'axios'
 import toast from 'react-hot-toast'
 import { format } from 'date-fns'
+import { BookingForm } from '../components/BookingForm'
 
 interface Event {
   id: string
@@ -32,6 +33,7 @@ export default function Events() {
   const [events, setEvents] = useState<Event[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null)
+  const [bookingEvent, setBookingEvent] = useState<Event | null>(null)
   const [filters, setFilters] = useState({
     status: '',
     search: ''
@@ -64,69 +66,21 @@ export default function Events() {
     setSelectedEvent(null)
   }
 
-  const handleBookEvent = async (event: Event) => {
+  const openBookingForm = (event: Event) => {
     if (!user) {
       toast.error('Please login to book events')
       return
     }
+    setBookingEvent(event)
+    setSelectedEvent(null) // Close event details modal if open
+  }
 
-    try {
-      // Free events: direct booking
-      if (!event.price || event.price <= 0) {
-        await axios.post('/events/book', { eventId: event.id })
-        toast.success('Event booked successfully!')
-        fetchEvents()
-        return
-      }
+  const closeBookingForm = () => {
+    setBookingEvent(null)
+  }
 
-      // Paid events: create Razorpay order
-      const orderRes = await axios.post('/payments/create-order', {
-        eventId: event.id,
-      })
-
-      const { orderId, amount, currency, keyId } = orderRes.data
-
-      const Razorpay = (window as any).Razorpay
-      if (!Razorpay) {
-        toast.error('Payment SDK not loaded. Please try again.')
-        return
-      }
-
-      const options = {
-        key: keyId,
-        amount,
-        currency,
-        name: event.title,
-        description: event.venue,
-        order_id: orderId,
-        prefill: {
-          name: user ? `${user.firstName} ${user.lastName}` : '',
-          email: user?.email || '',
-        },
-        theme: {
-          color: '#8b5cf6',
-        },
-        handler: async function () {
-          try {
-            await axios.post('/events/book', { eventId: event.id })
-            toast.success('Payment and booking successful!')
-            fetchEvents()
-          } catch (error: any) {
-            toast.error(error.response?.data?.message || 'Booking failed after payment')
-          }
-        },
-        modal: {
-          ondismiss: function () {
-            toast('Payment cancelled', { icon: 'ℹ️' })
-          },
-        },
-      }
-
-      const rzp = new Razorpay(options)
-      rzp.open()
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Failed to initiate payment')
-    }
+  const handleBookingSuccess = () => {
+    fetchEvents() // Refresh events to update booking count
   }
 
   const filteredEvents = events.filter(event => {
@@ -261,7 +215,7 @@ export default function Events() {
                   </button>
                   {user && event.status === 'APPROVED' && event._count.bookings < event.maxSeats && (
                     <button
-                      onClick={() => handleBookEvent(event)}
+                      onClick={() => openBookingForm(event)}
                       className="btn-primary text-sm"
                     >
                       Book Now
@@ -387,8 +341,8 @@ export default function Events() {
                     <button
                       type="button"
                       onClick={() => {
-                        handleBookEvent(selectedEvent)
                         closeEventDetails()
+                        openBookingForm(selectedEvent)
                       }}
                       className="btn-primary"
                     >
@@ -400,6 +354,16 @@ export default function Events() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Booking Form Modal */}
+      {bookingEvent && (
+        <BookingForm
+          event={bookingEvent}
+          isOpen={!!bookingEvent}
+          onClose={closeBookingForm}
+          onBookingSuccess={handleBookingSuccess}
+        />
+      )}
     </div>
   )
 }

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Users, Calendar, Building2, TrendingUp, CheckCircle, XCircle, Clock, User } from 'lucide-react'
+import { Users, Calendar, Building2, TrendingUp, CheckCircle, XCircle, Clock, User, QrCode } from 'lucide-react'
 import Link from 'next/link'
 import { useAuth } from '../contexts/AuthContext'
 import axios from 'axios'
@@ -80,11 +80,15 @@ export default function AdminDashboard() {
             <p className="text-slate-600">Manage users, events, and clubs</p>
           </div>
           <div className="flex items-center gap-2">
+            <Link href="/check-in" className="btn-primary flex items-center gap-1 text-sm">
+              <QrCode className="w-4 h-4" />
+              <span>Check-In</span>
+            </Link>
             <Link href="/profile" className="btn-secondary flex items-center gap-1 text-sm">
               <User className="w-4 h-4" />
               <span>Profile</span>
             </Link>
-            <Link href="/events" className="btn-primary flex items-center gap-1 text-sm">
+            <Link href="/events" className="btn-secondary flex items-center gap-1 text-sm">
               <Calendar className="w-4 h-4" />
               <span>Events</span>
             </Link>

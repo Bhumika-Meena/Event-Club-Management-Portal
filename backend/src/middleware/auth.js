@@ -35,6 +35,41 @@ const authMiddleware = async (req, res, next) => {
   }
 };
 
+// Optional auth: if a valid token exists, attaches req.user; otherwise continues unauthenticated.
+const optionalAuthMiddleware = async (req, res, next) => {
+  try {
+    const token = req.cookies.token || req.headers.authorization?.replace('Bearer ', '');
+    if (!token) {
+      req.user = null;
+      return next();
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.userId },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        role: true,
+        isActive: true
+      }
+    });
+
+    if (!user || !user.isActive) {
+      req.user = null;
+      return next();
+    }
+
+    req.user = user;
+    return next();
+  } catch (error) {
+    req.user = null;
+    return next();
+  }
+};
+
 const roleMiddleware = (...roles) => {
   return (req, res, next) => {
     if (!req.user) {
@@ -49,4 +84,4 @@ const roleMiddleware = (...roles) => {
   };
 };
 
-module.exports = { authMiddleware, roleMiddleware };
+module.exports = { authMiddleware, optionalAuthMiddleware, roleMiddleware };

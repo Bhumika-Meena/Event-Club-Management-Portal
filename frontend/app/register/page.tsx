@@ -93,9 +93,9 @@ export default function Register() {
     }
 
     // Check if password is alphanumeric (contains both letters and numbers)
-    const alphanumericRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/
+    const alphanumericRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/
     if (!alphanumericRegex.test(formData.password)) {
-      toast.error('Password must be alphanumeric (contain both letters and numbers)')
+      toast.error('Password must be alphanumeric (contain both letters and numbers and one special character)')
       return
     }
 
@@ -367,7 +367,7 @@ export default function Register() {
                   value={formData.role}
                   onChange={handleChange}
                 >
-                  <option value="STUDENT">Student</option>
+                  <option value="STUDENT">Student/Employee</option>
                   <option value="CLUB">Club/Committee</option>
                 </select>
               </div>

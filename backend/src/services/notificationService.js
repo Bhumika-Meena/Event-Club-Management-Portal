@@ -60,6 +60,32 @@ const sendBookingConfirmationEmail = async (userEmail, firstName, eventDetails, 
   try {
     const transporter = createEmailTransporter();
     
+    // Convert data URL to Buffer for email attachment
+    let qrCodeBuffer = null;
+    let attachments = [];
+    
+    if (qrCodeImage) {
+      try {
+        // Extract base64 data from data URL (format: data:image/png;base64,...)
+        const base64Data = qrCodeImage.replace(/^data:image\/\w+;base64,/, '');
+        qrCodeBuffer = Buffer.from(base64Data, 'base64');
+        
+        // Attach QR code as inline image with CID
+        attachments.push({
+          filename: 'qrcode.png',
+          content: qrCodeBuffer,
+          cid: 'qrcode', // Content-ID for referencing in HTML
+          contentType: 'image/png'
+        });
+        console.log('QR code attached to email (size:', qrCodeBuffer.length, 'bytes)');
+      } catch (bufferError) {
+        console.error('Error converting QR code to buffer:', bufferError);
+        // Continue without QR code if conversion fails
+      }
+    } else {
+      console.warn('No QR code image provided for booking confirmation email');
+    }
+    
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: userEmail,
@@ -80,14 +106,15 @@ const sendBookingConfirmationEmail = async (userEmail, firstName, eventDetails, 
           
           <div style="text-align: center; margin: 20px 0;">
             <h3>Your QR Code:</h3>
-            <img src="${qrCodeImage}" alt="QR Code" style="max-width: 200px; border: 1px solid #ddd; padding: 10px; background: white;">
-            <p style="font-size: 12px; color: #666;">Please bring this QR code to the event for check-in</p>
+            ${qrCodeBuffer ? '<img src="cid:qrcode" alt="QR Code" style="max-width: 200px; border: 1px solid #ddd; padding: 10px; background: white; display: block; margin: 0 auto;">' : '<p style="color: #999;">QR Code unavailable</p>'}
+            <p style="font-size: 12px; color: #666; margin-top: 10px;">Please bring this QR code to the event for check-in</p>
           </div>
           
           <p>We look forward to seeing you at the event!</p>
           <p>Best regards,<br>The Event Management Team</p>
         </div>
-      `
+      `,
+      attachments: attachments
     };
 
     await transporter.sendMail(mailOptions);

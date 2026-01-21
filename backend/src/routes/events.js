@@ -1,5 +1,5 @@
 const express = require('express');
-const { authMiddleware, roleMiddleware } = require('../middleware/auth');
+const { authMiddleware, optionalAuthMiddleware, roleMiddleware } = require('../middleware/auth');
 const {
   getAllEvents,
   getEventById,
@@ -14,8 +14,8 @@ const {
 const router = express.Router();
 
 // Public routes
-router.get('/', getAllEvents);
-router.get('/:id', getEventById);
+router.get('/', optionalAuthMiddleware, getAllEvents);
+router.get('/:id', optionalAuthMiddleware, getEventById);
 
 // Protected routes
 router.post('/book', authMiddleware, bookingValidation, bookEvent);

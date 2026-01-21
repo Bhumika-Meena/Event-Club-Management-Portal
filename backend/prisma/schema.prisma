@@ -29,6 +29,21 @@ enum BookingStatus {
   CHECKED_IN
 }
 
+enum AttendingType {
+  ALONE
+  WITH_FAMILY
+}
+
+enum BookingUserType {
+  STUDENT
+  FACULTY
+}
+
+enum EmployeeCategory {
+  TEACHING
+  NON_TEACHING
+}
+
 model User {
   id        String   @id @default(cuid())
   email     String   @unique
@@ -101,15 +116,40 @@ model Booking {
   status    BookingStatus @default(CONFIRMED)
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
+  checkedInAt DateTime?
+
+  // Booking form fields
+  userType      BookingUserType
+  rollNo        String?
+  department    String?
+  semester      String?
+  facultyId     String?
+  employeeCategory EmployeeCategory?
+  attendingWith AttendingType
+  numberOfPeople Int @default(1)
 
   // Relations
   userId  String
   user    User  @relation(fields: [userId], references: [id], onDelete: Cascade)
   eventId String
   event   Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  guests  BookingGuest[]
 
   @@unique([userId, eventId])
   @@map("bookings")
+}
+
+model BookingGuest {
+  id        String   @id @default(cuid())
+  name      String
+  age       Int
+  createdAt DateTime @default(now())
+
+  // Relations
+  bookingId String
+  booking   Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@map("booking_guests")
 }
 
 model Notification {
