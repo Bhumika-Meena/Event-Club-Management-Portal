@@ -25,16 +25,7 @@ const allowedOrigins = [
 
 app.use(helmet());
 app.use(cors({
-  origin: function (origin, callback) {
-    // allow requests with no origin (mobile apps, Postman)
-    if (!origin) return callback(null, true);
-
-    if (allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    } else {
-      return callback(new Error('Not allowed by CORS'));
-    }
-  },
+  origin: true, // ✅ allow requesting origin dynamically
   credentials: true
 }));
 
