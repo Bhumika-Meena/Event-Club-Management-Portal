@@ -45,16 +45,16 @@ app.use(cookieParser());
 app.use('/uploads', express.static('uploads'));
 
 // Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/users', userRoutes);
-app.use('/api/events', eventRoutes);
-app.use('/api/clubs', clubRoutes);
-app.use('/api/admin', adminRoutes);
-app.use('/api/bookings', bookingRoutes);
-app.use('/api/payments', paymentRoutes);
+app.use('/auth', authRoutes);
+app.use('/users', userRoutes);
+app.use('/events', eventRoutes);
+app.use('/clubs', clubRoutes);
+app.use('/admin', adminRoutes);
+app.use('/bookings', bookingRoutes);
+app.use('/payments', paymentRoutes);
 
 // Health check
-app.get('/api/health', (req, res) => {
+app.get('/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
