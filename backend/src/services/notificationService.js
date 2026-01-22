@@ -1,18 +1,8 @@
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 const twilio = require('twilio');
 
 // Email transporter setup
-const createEmailTransporter = () => {
-  return nodemailer.createTransport({
-    host: process.env.EMAIL_HOST,
-    port: process.env.EMAIL_PORT,
-    secure: false,
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS
-    }
-  });
-};
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 // Twilio client setup
 const createTwilioClient = () => {
@@ -25,10 +15,9 @@ const createTwilioClient = () => {
 // Send welcome email
 const sendWelcomeEmail = async (userEmail, firstName) => {
   try {
-    const transporter = createEmailTransporter();
-    
-    const mailOptions = {
-      from: process.env.EMAIL_USER,
+   
+    await resend.emails.send({
+      from: `Event & Club Management Portal <${process.env.FROM_EMAIL}>`,
       to: userEmail,
       subject: 'Welcome to Event & Club Management Portal',
       html: `
@@ -46,9 +35,7 @@ const sendWelcomeEmail = async (userEmail, firstName) => {
           <p>Best regards,<br>The Event Management Team</p>
         </div>
       `
-    };
-
-    await transporter.sendMail(mailOptions);
+    });
     console.log('Welcome email sent to:', userEmail);
   } catch (error) {
     console.error('Error sending welcome email:', error);
@@ -58,7 +45,6 @@ const sendWelcomeEmail = async (userEmail, firstName) => {
 // Send booking confirmation email
 const sendBookingConfirmationEmail = async (userEmail, firstName, eventDetails, qrCodeImage) => {
   try {
-    const transporter = createEmailTransporter();
     
     // Convert data URL to Buffer for email attachment
     let qrCodeBuffer = null;
@@ -85,9 +71,9 @@ const sendBookingConfirmationEmail = async (userEmail, firstName, eventDetails, 
     } else {
       console.warn('No QR code image provided for booking confirmation email');
     }
-    
-    const mailOptions = {
-      from: process.env.EMAIL_USER,
+   
+    await resend.emails.send({
+      from: `Event & Club Management Portal <${process.env.FROM_EMAIL}>`,
       to: userEmail,
       subject: `Booking Confirmation - ${eventDetails.title}`,
       html: `
@@ -115,9 +101,7 @@ const sendBookingConfirmationEmail = async (userEmail, firstName, eventDetails, 
         </div>
       `,
       attachments: attachments
-    };
-
-    await transporter.sendMail(mailOptions);
+    });
     console.log('Booking confirmation email sent to:', userEmail);
   } catch (error) {
     console.error('Error sending booking confirmation email:', error);
@@ -127,10 +111,9 @@ const sendBookingConfirmationEmail = async (userEmail, firstName, eventDetails, 
 // Send event reminder email
 const sendEventReminderEmail = async (userEmail, firstName, eventDetails) => {
   try {
-    const transporter = createEmailTransporter();
     
-    const mailOptions = {
-      from: process.env.EMAIL_USER,
+    await resend.emails.send({
+      from: `Event & Club Management Portal <${process.env.FROM_EMAIL}>`,
       to: userEmail,
       subject: `Event Reminder - ${eventDetails.title} Tomorrow`,
       html: `
@@ -152,9 +135,7 @@ const sendEventReminderEmail = async (userEmail, firstName, eventDetails) => {
           <p>Best regards,<br>The Event Management Team</p>
         </div>
       `
-    };
-
-    await transporter.sendMail(mailOptions);
+    });
     console.log('Event reminder email sent to:', userEmail);
   } catch (error) {
     console.error('Error sending event reminder email:', error);
@@ -164,10 +145,9 @@ const sendEventReminderEmail = async (userEmail, firstName, eventDetails) => {
 // Send OTP email
 const sendOTPEmail = async (userEmail, otp) => {
   try {
-    const transporter = createEmailTransporter();
     
-    const mailOptions = {
-      from: process.env.EMAIL_USER,
+    await resend.emails.send({
+      from: `Event & Club Management Portal <${process.env.FROM_EMAIL}>`,
       to: userEmail,
       subject: 'Email Verification OTP - Event & Club Management Portal',
       html: `
@@ -186,9 +166,7 @@ const sendOTPEmail = async (userEmail, otp) => {
           <p>Best regards,<br>The Event Management Team</p>
         </div>
       `
-    };
-
-    await transporter.sendMail(mailOptions);
+    });
     console.log('OTP email sent to:', userEmail);
   } catch (error) {
     console.error('Error sending OTP email:', error);
