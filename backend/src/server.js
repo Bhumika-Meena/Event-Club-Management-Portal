@@ -20,7 +20,7 @@ const PORT = process.env.PORT || 5000;
 // Must be before helmet to avoid conflicts
 const allowedOrigins = process.env.FRONTEND_URL 
   ? process.env.FRONTEND_URL.split(',').map(url => url.trim())
-  : ['http://localhost:3000'];
+  : ['http://localhost:3000', 'https://event-club-management-portal-mfe3.vercel.app'];
 
 app.use(cors({
   origin: function (origin, callback) {
