@@ -94,7 +94,7 @@ const verifyQRCode = async (req, res) => {
       console.error('JWT verification error:', jwtError);
       console.error('Error name:', jwtError.name);
       console.error('Error message:', jwtError.message);
-      return res.status(401).json({
+      return res.status(401).json({ 
         message: jwtError.message || 'Invalid or expired QR ticket',
         error: jwtError.name
       });
@@ -145,16 +145,16 @@ const verifyQRCode = async (req, res) => {
     // Trim both to handle whitespace issues
     const storedCode = (booking.qrCode || '').trim();
     const sentCode = qrCode.trim();
-
+    
     // If JWT verified successfully and contains correct bookingId, allow check-in
     // This handles cases where qrCode in DB might be old format or different
     if (decodedToken.bookingId !== booking.id) {
-      return res.status(401).json({
+      return res.status(401).json({ 
         message: 'QR ticket does not match this booking',
         hint: 'The QR code is for a different booking.'
       });
     }
-
+    
     // If stored code doesn't match but JWT is valid with correct bookingId, update it
     if (storedCode !== sentCode) {
       console.log('QR code in DB differs from sent code, but JWT is valid - updating stored code');
@@ -171,7 +171,7 @@ const verifyQRCode = async (req, res) => {
     }
 
     if (booking.status === 'CHECKED_IN') {
-      return res.status(400).json({
+      return res.status(400).json({ 
         message: 'Already checked in',
         checkedInAt: booking.checkedInAt
       });
@@ -181,28 +181,18 @@ const verifyQRCode = async (req, res) => {
     const eventDate = new Date(booking.event.date);
     const checkInStartTime = new Date(eventDate.getTime() - 20 * 60 * 60 * 1000); // 20hr before
     const now = new Date();
-
+    
     if (now < checkInStartTime) {
-      return res.status(400).json({
+      return res.status(400).json({ 
         message: 'Check-in is not available yet. Check-in opens 20hr before the event.',
         checkInOpensAt: checkInStartTime
-      });
-    }
-
-    // Block check-in 2 hours after event start
-    const checkInEndTime = new Date(eventDate.getTime() + 2 * 60 * 60 * 1000); // +2hr
-
-    if (now > checkInEndTime) {
-      return res.status(400).json({
-        message: 'Check-in window has closed. Check-in is allowed only up to 2 hours after the event starts.',
-        checkInClosedAt: checkInEndTime
       });
     }
 
     // Mark as checked in with timestamp
     const updatedBooking = await prisma.booking.update({
       where: { id: booking.id },
-      data: {
+      data: { 
         status: 'CHECKED_IN',
         checkedInAt: new Date()
       },

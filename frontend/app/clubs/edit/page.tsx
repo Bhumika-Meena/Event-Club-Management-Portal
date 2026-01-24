@@ -31,14 +31,14 @@ export default function EditClub() {
     facebook: '',
     twitter: ''
   })
-
+  
   const { user } = useAuth()
   const router = useRouter()
 
   useEffect(() => {
     if (user?.role === 'CLUB') {
       fetchClub()
-    } else {
+    } else if (user && user.role !== 'CLUB') {
       router.push('/')
     }
   }, [user])

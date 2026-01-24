@@ -37,6 +37,23 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 axios.defaults.baseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'
 axios.defaults.withCredentials = true
 
+// Add axios interceptor to include Authorization header as fallback
+axios.interceptors.request.use(
+  (config) => {
+    // Try to get token from localStorage as fallback
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('auth_token')
+      if (token && !config.headers.Authorization) {
+        config.headers.Authorization = `Bearer ${token}`
+      }
+    }
+    return config
+  },
+  (error) => {
+    return Promise.reject(error)
+  }
+)
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
@@ -47,12 +64,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const checkAuth = async () => {
     try {
-      // Always ask the backend who we are; it reads the HTTP-only cookie
+      // Always ask the backend who we are; it reads the HTTP-only cookie or Authorization header
       const response = await axios.get('/auth/me')
       setUser(response.data.user)
     } catch (error) {
       console.error('Auth check failed:', error)
       setUser(null)
+      // Clear token if auth check fails
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('auth_token')
+      }
     } finally {
       setLoading(false)
     }
@@ -61,7 +82,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (email: string, password: string) => {
     try {
       const response = await axios.post('/auth/login', { email, password })
-      const { user: userData } = response.data
+      const { user: userData, token } = response.data
+      
+      // Store token in localStorage as fallback (cookies are primary)
+      if (token && typeof window !== 'undefined') {
+        localStorage.setItem('auth_token', token)
+      }
       
       setUser(userData)
       return userData
@@ -73,7 +99,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const register = async (userData: RegisterData) => {
     try {
       const response = await axios.post('/auth/register', userData)
-      const { user: newUser } = response.data
+      const { user: newUser, token } = response.data
+      
+      // Store token in localStorage as fallback (cookies are primary)
+      if (token && typeof window !== 'undefined') {
+        localStorage.setItem('auth_token', token)
+      }
       
       setUser(newUser)
       return newUser
@@ -84,6 +115,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = () => {
     setUser(null)
+    // Clear token from localStorage
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('auth_token')
+    }
     axios.post('/auth/logout')
   }
 

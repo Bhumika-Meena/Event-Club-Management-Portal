@@ -7,7 +7,7 @@ async function main() {
   console.log('Starting database seeding...');
 
   // Create admin user
-  const adminPassword = await bcrypt.hash('admin@123', 12);
+  const adminPassword = await bcrypt.hash('admin123', 12);
   const admin = await prisma.user.upsert({
     where: { email: 'admin@example.com' },
     update: {},
@@ -21,7 +21,7 @@ async function main() {
   });
 
   // Create club user
-  const clubPassword = await bcrypt.hash('club@123', 12);
+  const clubPassword = await bcrypt.hash('club123', 12);
   const clubUser = await prisma.user.upsert({
     where: { email: 'club@example.com' },
     update: {},
@@ -35,7 +35,7 @@ async function main() {
   });
 
   // Create student user
-  const studentPassword = await bcrypt.hash('student@123', 12);
+  const studentPassword = await bcrypt.hash('student123', 12);
   const student = await prisma.user.upsert({
     where: { email: 'student@example.com' },
     update: {},
@@ -100,9 +100,9 @@ async function main() {
 
   console.log('Database seeded successfully!');
   console.log('Created users:');
-  console.log('- Admin: admin@example.com / admin@123');
-  console.log('- Club: club@example.com / club@123');
-  console.log('- Student: student@example.com / student@123');
+  console.log('- Admin: admin@example.com / admin123');
+  console.log('- Club: club@example.com / club123');
+  console.log('- Student: student@example.com / student123');
 }
 
 main()

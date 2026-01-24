@@ -126,11 +126,15 @@ const register = async (req, res) => {
     const token = generateToken(user.id);
 
     // Set HTTP-only cookie
+    // For production (cross-origin): use 'none' with secure: true
+    // For development (same-origin): use 'strict'
+    const isProduction = process.env.NODE_ENV === 'production';
     res.cookie('token', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+      secure: isProduction,
+      sameSite: isProduction ? 'none' : 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      domain: isProduction ? undefined : undefined // Let browser handle domain
     });
 
     res.status(201).json({
@@ -182,11 +186,15 @@ const login = async (req, res) => {
     const token = generateToken(user.id);
 
     // Set HTTP-only cookie
+    // For production (cross-origin): use 'none' with secure: true
+    // For development (same-origin): use 'strict'
+    const isProduction = process.env.NODE_ENV === 'production';
     res.cookie('token', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+      secure: isProduction,
+      sameSite: isProduction ? 'none' : 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      domain: isProduction ? undefined : undefined // Let browser handle domain
     });
 
     // Remove password from response
@@ -205,7 +213,12 @@ const login = async (req, res) => {
 
 // Logout
 const logout = (req, res) => {
-  res.clearCookie('token');
+  const isProduction = process.env.NODE_ENV === 'production';
+  res.clearCookie('token', {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: isProduction ? 'none' : 'strict'
+  });
   res.json({ message: 'Logout successful' });
 };
 
